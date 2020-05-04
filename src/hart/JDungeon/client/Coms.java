@@ -94,7 +94,7 @@ public class Coms extends Thread
                     break;
 
                 default:
-                    System.out.println(smsg);
+                    System.out.println("Unknown command : " + smsg);
                     System.out.println("Invalid Server Message, exiting");
                     System.exit(-1);
                     break;

@@ -27,7 +27,7 @@ public class JDT extends Application
     static String Port;
     static GenericData<Player> dmgr;
     static Player ply;
-    static int ver = 6;
+    static int ver = 7;
     static ScreenControllerFX SCFX;
     static Coms coms;
 
@@ -75,7 +75,7 @@ public class JDT extends Application
             DataOutputStream out = new DataOutputStream(client.getOutputStream());
             DataInputStream in = new DataInputStream(client.getInputStream());
 
-            out.writeUTF(client.getLocalSocketAddress() + " | " + ply.getName() + " Has Joined the JunJeon Crawl");
+            out.writeUTF(client.getLocalSocketAddress() + " | " + ply.getName() + " Has Joined the Junjeon Crawl");
 
             System.out.println("Socket creation complete, switching stream control to Coms thread...");
             coms = new Coms(out, in, ply, ver);
