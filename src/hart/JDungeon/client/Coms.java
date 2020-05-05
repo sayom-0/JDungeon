@@ -2,24 +2,37 @@ package hart.JDungeon.client;
 
 import hart.JDungeon.client.Entity.Player.Player;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.ArrayList;
 
 public class Coms extends Thread
 {
-    private DataOutputStream out;
-    private DataInputStream in;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
     private Player ply;
     private int ver;
+    private ArrayList<String> inqueue, outqueue;
+    private Socket sock;
 
-    public Coms(DataOutputStream out, DataInputStream in, Player ply, int ver) throws IOException
+    public Coms(Socket sock, Player ply, int ver) throws IOException
     {
-        this.in = in;
-        this.out = out;
+        inqueue = new ArrayList<>();
+        outqueue = new ArrayList<>();
+        this.sock = sock;
+        this.out = new ObjectOutputStream(sock.getOutputStream());
+        this.in = new ObjectInputStream(sock.getInputStream());
         this.ply = ply;
         this.ver = ver;
         System.out.println("Coms Thread created");
+        out.writeObject(sock.getLocalSocketAddress() + " | " + ply.getName() + " Has Joined the Junjeon Crawl");
+    }
+
+    public void queueMsg(String msg)
+    {
+        inqueue.add(msg);
     }
 
     public void run()
@@ -30,8 +43,8 @@ public class Coms extends Thread
         {
             try
             {
-                smsg = in.readUTF();
-            } catch (IOException e)
+                smsg = (String) in.readObject();
+            } catch (IOException | ClassNotFoundException e)
             {
                 System.out.println("Connection failure, unable to send/receive message, exiting");
                 System.exit(-2);
@@ -44,7 +57,7 @@ public class Coms extends Thread
                     try
                     {
                         System.out.println("RQ:NAME, sending");
-                        out.writeUTF(ply.getName());
+                        out.writeObject(ply.getName());
                     } catch (IOException e)
                     {
                         System.out.println("Connection failure, unable to send/receive message, exiting");
@@ -57,7 +70,7 @@ public class Coms extends Thread
                     try
                     {
                         System.out.println("RQ:VER, sending");
-                        out.writeInt(ver);
+                        out.writeObject(ver);
                     } catch (IOException e)
                     {
                         System.out.println("Connection failure, unable to send/receive message, exiting");
@@ -69,26 +82,27 @@ public class Coms extends Thread
                 case "MSG":
                     try
                     {
-                        out.writeUTF("");
-                    } catch (IOException e)
+                        out.writeObject("");
+                        System.out.println((String) in.readObject());
+                        out.writeObject("");
+                    } catch (IOException | ClassNotFoundException e)
                     {
                         System.out.println("Connection failure, unable to send/receive message, exiting");
                         System.exit(-2);
                         e.printStackTrace();
                     }
-                    try
-                    {
-                        System.out.println(in.readUTF());
-                    } catch (IOException e)
-                    {
-                        e.printStackTrace();
-                    }
+                    break;
 
+                case "RQ:INFO":
                     try
                     {
-                        out.writeUTF("");
-                    } catch (IOException e)
+                        out.writeObject(inqueue);
+                        inqueue.clear();
+                        outqueue = (ArrayList<String>) in.readObject();
+                    } catch (IOException | ClassNotFoundException e)
                     {
+                        System.out.println("Connection failure, unable to send/receive message, exiting");
+                        System.exit(-2);
                         e.printStackTrace();
                     }
                     break;

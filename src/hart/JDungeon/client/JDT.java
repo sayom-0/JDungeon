@@ -15,7 +15,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.application.Application;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -27,7 +28,7 @@ public class JDT extends Application
     static String Port;
     static GenericData<Player> dmgr;
     static Player ply;
-    static int ver = 7;
+    static int ver = 8;
     static ScreenControllerFX SCFX;
     static Coms coms;
 
@@ -55,7 +56,7 @@ public class JDT extends Application
             else
             {
                 System.out.print("\nEnter player name : ");
-                ply = new Player(scan.nextLine());
+                ply = new Player(scan.nextLine(), coms);
                 break;
             }
         }
@@ -72,13 +73,8 @@ public class JDT extends Application
 
             System.out.println("Connected to " + client.getRemoteSocketAddress());
 
-            DataOutputStream out = new DataOutputStream(client.getOutputStream());
-            DataInputStream in = new DataInputStream(client.getInputStream());
-
-            out.writeUTF(client.getLocalSocketAddress() + " | " + ply.getName() + " Has Joined the Junjeon Crawl");
-
             System.out.println("Socket creation complete, switching stream control to Coms thread...");
-            coms = new Coms(out, in, ply, ver);
+            coms = new Coms(client, ply, ver);
         } catch (IOException e)
         {
             e.printStackTrace();
