@@ -97,8 +97,8 @@ public class Coms extends Thread
                     try
                     {
                         out.writeObject(inqueue);
-                        inqueue.clear();
                         outqueue = (ArrayList<String>) in.readObject();
+                        inqueue.clear();
                     } catch (IOException | ClassNotFoundException e)
                     {
                         System.out.println("Connection failure, unable to send/receive message, exiting");
